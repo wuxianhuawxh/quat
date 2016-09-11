@@ -1,0 +1,39 @@
+%  四元数运算
+p=[1 2 3 4];
+q=[4,3,2,1];
+quatmod(p)
+nor_p=quatnormalize(p);
+nor_q=quatnormalize(q);
+nor_p_inv=quatinv(nor_p);
+nor_q_inv=quatinv(nor_q);
+div=quatdivide(q,p) ;
+mul=quatmultiply(p,q);
+quatconj(p);                                                         % 共轭
+r=[0.2 ,0.4, 0.1];
+n = quatrotate(nor_p,r);                                       % 旋转函数
+
+syms  q1 q2 q3 q4 real
+syms  p1 p2 p3 p4 real
+P=[p1 p2 p3 p4];
+Q=[q1 q2 q3 q4];
+MP=[P(1) -P(2) -P(3) -P(4);...
+        P(2)  P(1)  -P(4) P(3);...
+        P(3)  P(4)   P(1) -P(2);...
+        P(4)  -P(3)  P(2)  P(1)];
+M_P=[P(1) -P(2) -P(3) -P(4);...
+        P(2) P(1)  P(4) -P(3);...
+        P(3)  -P(4)   P(1) P(2);...
+        P(4)  P(3)  -P(2) P(1)];
+Rn=MP*M_P(conj) *rb;                                           %Rn = M(Q) *rb *M(conj(Q)) 
+MQ=[q1 -q2 -q3 -q4;...
+        q2  q1  -q4 q3;...
+        q3  q4   q1 -q2;...
+        q4  -q3  q2  q1];
+
+M_Q=[q1 -q2 -q3 -q4;...
+        q2  q1  q4 -q3;...
+        q3  -q4   q1 q2;...
+        q4  q3  -q2  q1];
+ P=[p1 p2 p3 p4];
+ Q=[q1 q2 q3 q4];
+ 
