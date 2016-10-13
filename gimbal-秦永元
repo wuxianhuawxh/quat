@@ -1,0 +1,41 @@
+%gimbal转轴平台系统
+%b为飞机机体坐标系
+%飞机机体->gimbal 飞机接航向y-> 接横滚x -> 接俯仰z
+%b 飞机机体坐标系 x(前) y(上) z(右)
+%a Z方位环坐标系 Ya和Yb 固联 没有相对运动  
+%r X横滚环坐标系 Xr和Xa 固联 r对a只有横滚运动，产生转角 Fr
+%f Y俯仰环坐标系 Zf和Zr 固联 f对r只有俯仰运动，产生转角 Ff
+
+%A 环架坐标系：XA,YA,ZA分别为Xr Ya Zf轴，一般不是正交坐标系
+clear 
+syms Fr Ff Fa real % 三轴转角 
+syms Wibx Wiby Wibz real % b 三轴角速度
+syms Wirx Wiry Wirz real % r 三轴角速度
+syms Wifx Wify Wifz real % f 三轴角速度
+syms Wiax Wiay Wiaz real % a 三轴角速度
+syms Wmr Wmf Wma real % 环架三轴电机速度
+WiB=[Wibx Wiby Wibz]';
+WiR=[Wirx Wiry Wirz]';
+WiF=[Wifx Wify Wifz]';
+WiA=[Wiax Wiay Wiaz]';
+% 假设机体b三轴角速度为Wib
+Wib=[Wibx Wiby Wibz]';
+%b到a的转换矩阵 a-Y
+Cab=[cos(Fa) 0 -sin(Fa);0 1 0;sin(Fa) 0 cos(Fa)];
+%由b三轴速度，电机速度得到r三轴速度 电机的转速当成a的转速
+Wia=Cab*Wib +[0 Wma 0]';
+%a到r的转换矩阵 r-X
+Cra=[1 0 0;0 cos(Fr) sin(Fr);0 -sin(Fr) cos(Fr)];
+%由a系速度和r系电机速度得r系速度 r-X
+Wir=Cra*WiA+[Wmr 0 0]'; 
+%由r到f的转换矩阵 f-Z
+Cfr=[cos(Ff) sin(Ff) 0;-sin(Ff) cos(Ff) 0;0 0 1];
+%由r系速度和f系电机速度得f系速度
+Wif=Cfr*WiR+[0 0 Wmf]';
+
+T1=[cos(Ff)  (cos(Fr)*sin(Ff)) 0; (-sin(Ff)) (cos(Ff)*cos(Fr)) 0;0 0 1];
+T1inv=simplify(inv(T1))
+T2=T1inv;
+T3=[0 cos(Fr) sin(Ff)*sin(Fr);...
+    0 cos(Fr) cos(Ff)*sin(Fr);...
+    0 0 0];
