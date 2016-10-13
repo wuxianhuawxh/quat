@@ -1,0 +1,91 @@
+%欧拉 方向余弦 四元数转换
+% c飞机机体坐标系 X-前  Y-上 Z-右
+% n 大地坐标系初始以b重合
+
+clear all
+syms Fx Fy Fz real
+%Fx=45/180*pi;
+% 绕Y转Fy角度
+Can=[cos(Fy) 0 -sin(Fy);0 1 0;sin(Fy) 0 cos(Fy)];
+% 再绕X转Fx
+Cba=[1 0 0;0 cos(Fx) sin(Fx);0 -sin(Fx) cos(Fx)];
+%再绕Z转Fz
+Ccb=[cos(Fz) sin(Fz) 0;-sin(Fz) cos(Fz) 0;0 0 1];
+% n -> c  的转换矩阵
+Ccn=Ccb*Cba*Can;
+%Ccn 对应的欧垃角为Fx Fy Fz 表示N->C
+% Ccn = 
+% [ cos(Fy)*cos(Fz) + sin(Fx)*sin(Fy)*sin(Fz), cos(Fx)*sin(Fz), cos(Fy)*sin(Fx)*sin(Fz) - cos(Fz)*sin(Fy)]
+% [ cos(Fz)*sin(Fx)*sin(Fy) - cos(Fy)*sin(Fz), cos(Fx)*cos(Fz), sin(Fy)*sin(Fz) + cos(Fy)*cos(Fz)*sin(Fx)]
+% [                           cos(Fx)*sin(Fy),        -sin(Fx),                           cos(Fx)*cos(Fy)]
+% 当角度很小时
+% [ 1, sin(Fz), -sin(Fy)]
+% [ -sin(Fz),1,sin(Fx)]
+% [ sin(Fy),-sin(Fx),1]
+
+Cnc=Ccn';
+% Cnc =
+%  
+% [ cos(Fy)*cos(Fz) + sin(Fx)*sin(Fy)*sin(Fz), cos(Fz)*sin(Fx)*sin(Fy) - cos(Fy)*sin(Fz), cos(Fx)*sin(Fy)]
+% [                           cos(Fx)*sin(Fz),                           cos(Fx)*cos(Fz),        -sin(Fx)]
+% [ cos(Fy)*sin(Fx)*sin(Fz) - cos(Fz)*sin(Fy), sin(Fy)*sin(Fz) + cos(Fy)*cos(Fz)*sin(Fx), cos(Fx)*cos(Fy)]
+% 三轴在Y上的投影如下
+% c21=cos(Fx)*sin(Fz);
+% c22=cos(Fx)*cos(Fz);
+% c23=-sin(Fx);
+%[ c22*wz - c23*wy, c23*wx - c21*wz, c21*wy - c22*wx]
+% c21 增量
+% cos(Fx)*cos(Fz)*wz - (-sin(Fx)*wy)
+% c23 增量
+% cos(Fx)*sin(Fz)*wy - cos(Fx)*cos(Fz)*wx
+% 为了让横滚和俯仰不变 则需要控制两轴电机，让c21和c23 的增量变为零
+% 下面就是转动电机来补偿
+% 横滚转角位Px，俯仰转角为Pz
+% 设Px 电机速度增量为 Mx； Pz电机转速增加 Mz; 
+% 当角度很小时
+% [ 1, -sin(Fz), sin(Fy)]
+% [ sin(Fz),1,-sin(Fx)]
+% [ -sin(Fy),sin(Fx),1]
+% 设 Cbn =
+% [c11 c12 c13;...
+%  c21 c22 c23;...
+%  c31 c32 c33];
+% 控制目标1.c坐标系中X轴和n坐标系中的Y轴夹角为90度设为gamma；目标2.c坐标系中的Z轴和n坐标系的Y轴夹角为俯仰轴控制角设为TETA，范围0~60;不变则为增稳
+% 上面是位置环；为最终目标， 接下来需要做的是为达到这两目标，b轴的三轴角速度 姿态角 滚转角 来求出 需要调整的电机控制增量
+% 命题1，增稳控制 c的速度Wc
+% 在c中，陀螺速度为Wc 采用时间为t t后坐标系为d 则
+syms wx wy wz t real
+syms c11 c12 c13 c21 c22 c23 c31 c32 c33 real
+Cnc=[c11 c12 c13;...
+ c21 c22 c23;...
+ c31 c32 c33];
+Ccn=Cnc';
+Wc=[0 -wz wy;wz 0 -wx;-wy wx 0]
+Cdn=Cdc*Ccn
+Cnd=Cnc*Ccd
+Cnd= (Cdc*Ccn)'=Ccn'*Cdc'=Cnc*Ccd
+FX=-(asin(Ccn(3,2)));
+FZ=atan(Ccn(1,2)/Ccn(2,2));
+FY=atan(Ccn(3,1)/Ccn(3,3));
+j=1;
+i=linspace(0,2*pi,1000);
+sinV=sin(i);
+asinV=asin(sinV);
+cosV=cos(i);
+acosV=acos(i);
+figure
+hold on
+plot(sinV,'g')
+plot(asinV,'r')
+plot(cosV,'b')
+plot(acosV,'y')
+cosV=cos(i);
+acosV=acos(cosV);
+figure
+hold on
+plot(cosV,'b')
+plot(acosV,'r')
+
+for i=0:0.001:4*pi
+    sin(j)=sin(i);
+    cos
